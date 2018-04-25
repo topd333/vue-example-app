@@ -1,6 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+
+// Containers
+import Container from '@/components/Container'
+
+import List from '@/components/pages/List'
+import Add from '@/components/pages/Add'
 
 Vue.use(Router)
 
@@ -8,8 +13,17 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      component: Container,
+      children: [
+        {
+          path: '/',
+          component: List
+        },
+        {
+          path: '/add',
+          component: Add
+        }
+      ]
     }
   ]
 })
