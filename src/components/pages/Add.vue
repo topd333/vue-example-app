@@ -1,53 +1,75 @@
 <template>
-  <div class="row">
-    <div class="col-sm-12">
-      <h2>Add New Grocery</h2>
-    </div>
+  <b-container fluid>
+    <!-- User Interface controls -->
+    <b-row>
+      <b-col md="12" class="my-1">
+        <h2>Add New Grocery</h2>
+      </b-col>
+    </b-row>
 
-    <div class="col-md-8 m-t-20">
-      <form action="#" method="post" class="subscribe-form" data-vv-scope="grocery-form">
-        <div class="row">
-          <div class="form-group col-md-12">
-            <label for="name"> Name </label>
-            <input type="text" id="name" class="form-control" v-model="grocery.name"/>
-          </div>
-        </div>
-        <div class="row">
-          <div class="form-group col-md-12">
-            <label for="amount"> Amount </label>
-            <input type="text" id="amount" name="amount" class="form-control" v-model="grocery.amount" v-validate="'required|integer'" data-vv-as="amount" />
-            <p class="vv-invalid" v-if="errors.has('grocery-form.amount')">
-              {{ errors.first('grocery-form.amount') }}
-            </p>
-          </div>
-        </div>
-      </form>
-
-      <button class="btn btn-primary" v-on:click="onCreategrocery">
-        Create grocery
-        <i class="fa fa-btn fa-spinner fa-spin" v-if="isSavingGrocery"></i>
-      </button>
-    </div>
-  </div>
+    <b-row>
+      <b-col md="8" class="my-1">
+        <form action="#" method="post" class="subscribe-form" data-vv-scope="grocery-form">
+          <b-row>
+            <b-col md="12" class="form-group">
+              <label for="name"> Name </label>
+              <b-form-input v-model="grocery.name"
+                type="text" id="name" v-validate="'required'"
+                placeholder="Enter your name" required></b-form-input>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col md="12" class="form-group">
+              <label for="amount"> Fridge </label>
+              <b-form-select v-model="grocery.fridge" :options="fridges" class="mb-3" />
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col md="12" class="form-group">
+              <b-button @click="onAddGrocery(grocery)">
+                Add
+              </b-button>
+            </b-col>
+          </b-row>
+        </form>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
+
 export default {
   name: 'Add',
-  data () {
+
+  data: () => {
     return {
-      grocery: {},
-      // selectedUser: localStorage.getItem('selectedUser', null),
-      isSavingGrocery: false
+      grocery: {
+        name: '',
+        fridge: 1
+      }
     }
   },
+
+  computed: {
+    ...mapState({
+      'fridges': state => {
+        return state.list.fridges
+      }
+    })
+  },
+
   methods: {
-    onCreategrocery: function (event) {
-      if (event) event.preventDefault()
-      this.$validator.validateAll('deposit-form').then(() => {
-        this.isSavingGrocery = true
-      }).catch(() => {
-      })
+    ...mapActions([
+      'addGrocery'
+    ]),
+
+    onAddGrocery (grocery) {
+      if (!grocery.name) {
+        return
+      }
+      this.addGrocery(grocery)
     }
   }
 }

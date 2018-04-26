@@ -1,116 +1,117 @@
 <template>
-  <div class="row">
-    <div class="col-sm-12">
-      <h2>Grocery List</h2>
-      <router-link :to="'/add'" class="btn btn-sm btn-primary m-b-20" >
-        <span class="fa fa-plus"></span> Add
-      </router-link>
-    </div>
+  <b-container fluid>
+    <b-row>
+      <b-col md="12" class="my-1">
+        <h2>Grocery List</h2>
+      </b-col>
+    </b-row>
 
-    <div class="col-sm-12">
-      <div class="table-responsive">
-        <vuetable ref="vuetable"
-          :api-mode="false"
-          :data="mydata"
-          :fields="fields"
-          :css="css.table"
-        >
-          <template slot="actions" slot-scope="props">
-            <div class="table-button-container">
-              <button class="btn btn-sm btn-warning" @click="editRow(props.rowData)">
-                <span class="fa fa-pencil"></span> Edit</button>
-              <button class="btn btn-sm btn-danger" @click="deleteRow(props.rowData)">
-                <span class="fa fa-trash"></span> Delete</button>
-            </div>
-          </template>
-        </vuetable>
-      </div>
-    </div>
-  </div>
+    <!-- User Interface controls -->
+    <b-row>
+      <b-col md="6" class="my-1">
+        <b-form-group class="mb-0">
+          <router-link :to="'/add'" class="btn btn-sm btn-primary m-b-20" >
+          <span class="fa fa-plus"></span> Add
+        </router-link>
+        </b-form-group>
+      </b-col>
+      <b-col md="6" class="my-1">
+        <b-form-group horizontal label="Filter" class="mb-0">
+          <b-input-group>
+            <b-form-input v-model="filter" placeholder="Type to Search" />
+            <b-input-group-append>
+              <b-btn :disabled="!filter" @click="filter = ''">Clear</b-btn>
+            </b-input-group-append>
+          </b-input-group>
+        </b-form-group>
+      </b-col>
+    </b-row>
+
+    <!-- Main table element -->
+    <b-table show-empty
+             stacked="md"
+             :items="groceries"
+             :fields="fields"
+             :current-page="currentPage"
+             :per-page="perPage"
+             :filter="filter"
+             :sort-by.sync="sortBy"
+             :sort-desc.sync="sortDesc"
+             @filtered="onFiltered"
+    >
+      <template slot="fridge" slot-scope="row">{{'Fridge ' + row.item.fridge}}</template>
+      <template slot="actions" slot-scope="row">
+        <b-button size="sm" @click="deleteGrocery(row.item.id)">
+          Used up
+        </b-button>
+      </template>
+    </b-table>
+
+    <!-- User Interface controls -->
+    <b-row>
+      <b-col md="8" class="my-1">
+        <b-pagination :total-rows="groceries.length" :per-page="perPage" v-model="currentPage" class="my-0" />
+      </b-col>
+      <b-col md="4" class="my-1">
+        <b-form-group horizontal label="Per page" class="mb-0">
+          <b-form-select :options="pageOptions" v-model="perPage" />
+        </b-form-group>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
-import Vuetable from 'vuetable-2/src/components/Vuetable'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'List',
-  components: {
-    Vuetable
-  },
+
   data () {
     return {
       fields: [
-        'id',
-        'name',
-        'amount',
-        {
-          name: 'fridge',
-          callback: 'formatFridge'
-        },
-        '__slot:actions'
+        { key: 'name', label: 'Name', sortable: true },
+        { key: 'amount', label: 'Amount', sortable: true, 'class': 'text-center' },
+        { key: 'fridge', label: 'Fridge' },
+        { key: 'actions', label: 'Actions' }
       ],
-      css: {
-        table: {
-          tableClass: 'table table-hovered',
-          loadingClass: 'loading',
-          ascendingIcon: 'fa fa-chevron-up',
-          descendingIcon: 'fa fa-chevron-down',
-          handleIcon: 'fa fa-bars'
-        }
-      },
-      mydata: [
-        {
-          id: 1,
-          name: 'Bread',
-          amount: 10,
-          fridge: 1,
-          created_at: '2017-01-01 07:21:10',
-          updated_at: '2017-01-01 07:21:10'
-        },
-        {
-          id: 2,
-          name: 'Cake',
-          amount: 1,
-          fridge: 1,
-          created_at: '2017-01-01 07:21:10',
-          updated_at: '2017-01-01 07:21:10'
-        },
-        {
-          id: 3,
-          name: 'Apple',
-          amount: 1,
-          fridge: 2,
-          created_at: '2017-01-01 07:21:10',
-          updated_at: '2017-01-01 07:21:10'
-        },
-        {
-          id: 4,
-          name: 'Strawberry',
-          amount: 5,
-          fridge: 2,
-          created_at: '2017-01-01 07:21:10',
-          updated_at: '2017-01-01 07:21:10'
-        },
-        {
-          id: 5,
-          name: 'Blueberry',
-          amount: 8,
-          fridge: 3,
-          created_at: '2017-01-01 07:21:10',
-          updated_at: '2017-01-01 07:21:10'
-        }
-      ]
+      currentPage: 1,
+      perPage: 10,
+      pageOptions: [ 5, 10, 15 ],
+      sortBy: null,
+      sortDesc: false,
+      filter: null
     }
   },
+
+  computed: {
+    // ...mapGetters({
+    //   'groceries': 'getGroceryList'
+    // }),
+
+    ...mapState({
+      'groceries': state => {
+        return state.list.groceries
+      }
+    }),
+
+    sortOptions () {
+      // Create an options list from our fields
+      return this.fields
+        .filter(f => f.sortable)
+        .map(f => { return { text: f.label, value: f.key } })
+    }
+  },
+
   methods: {
-    formatFridge (value) {
-      return 'Fridge' + value
-    },
-    editRow (rowData) {
-      alert('You clicked edit on' + JSON.stringify(rowData))
-    },
-    deleteRow (rowData) {
-      alert('You clicked delete on' + JSON.stringify(rowData))
+    ...mapActions([
+      'deleteGrocery'
+    ]),
+
+    onFiltered (filteredItems) {
+      // Trigger pagination to update the number of buttons/pages due to filtering
+      this.totalRows = filteredItems.length
+      this.currentPage = 1
     }
   }
 }

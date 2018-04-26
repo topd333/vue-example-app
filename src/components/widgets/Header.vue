@@ -4,7 +4,7 @@
     <b-navbar-brand href="/#/"><img src="../../assets/logo.png" height="30"></b-navbar-brand>
     <b-collapse is-nav id="nav_collapse">
       <b-navbar-nav>
-        <b-nav-item href="/#/">Home</b-nav-item>
+        <b-nav-item href="/#/">List</b-nav-item>
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
