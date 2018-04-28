@@ -65,7 +65,7 @@ export default {
   },
 
   APPLY_FRIDGE (state) {
-    state.groceries = state.n_groceries
+    state.groceries = cloneDeep(state.n_groceries)
     saveState(state.groceries)
     Vue.toasted.show('Fridge Updated')
   }
