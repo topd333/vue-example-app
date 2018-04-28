@@ -17,10 +17,11 @@ const loadState = () => {
 const state = {
   groceries: loadState() || [],
 
+  n_groceries: loadState() || [],
+
   fridges: [
     { value: 1, text: 'Fridge 1' },
-    { value: 2, text: 'Fridge 2' },
-    { value: 3, text: 'Fridge 3' }
+    { value: 2, text: 'Fridge 2' }
   ]
 }
 

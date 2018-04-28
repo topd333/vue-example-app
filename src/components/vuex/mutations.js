@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-import { findKey, findIndex } from 'lodash'
+import { findKey, findIndex, cloneDeep } from 'lodash'
 
 const saveState = (state) => {
   try {
@@ -30,6 +30,7 @@ export default {
         }
       ]
     }
+    state.n_groceries = state.groceries
     saveState(state.groceries)
     Vue.toasted.show('Grocery Added')
   },
@@ -42,7 +43,30 @@ export default {
     } else {
       Vue.delete(state.groceries, index)
     }
+    state.n_groceries = state.groceries
     saveState(state.groceries)
     Vue.toasted.show('Grocery Removed')
+  },
+
+  INIT_FRIDGE (state) {
+    state.n_groceries = cloneDeep(state.groceries)
+  },
+
+  UPDATE_FRIDGE (state, { val }) {
+    let index = findIndex(state.n_groceries, { id: val.id })
+    let key = findKey(state.n_groceries, { name: state.n_groceries[index].name, fridge: val.fridge })
+
+    if (key) {
+      state.n_groceries[key].amount += state.n_groceries[index].amount
+      Vue.delete(state.n_groceries, index)
+    } else {
+      state.n_groceries[index].fridge = val.fridge
+    }
+  },
+
+  APPLY_FRIDGE (state) {
+    state.groceries = state.n_groceries
+    saveState(state.groceries)
+    Vue.toasted.show('Fridge Updated')
   }
 }

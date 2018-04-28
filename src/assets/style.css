@@ -27,3 +27,15 @@ h2 {
 .m-b-30 {
   margin-bottom: 30px;
 }
+
+.list-select {
+  width: 40%;
+  display: inline-block;
+}
+
+.list-select > div  > div {
+  cursor: move;
+  border: 1px solid;
+  padding: 0 5px;
+  margin-bottom: 5px;
+}
